@@ -15,6 +15,13 @@
     <%= error_messages_for f.object %>
 
     <div class="boxline">
+      <label class="required">Your Payout Address:</label>
+      <span>
+      <tt><%= @edit_user.payout_address  %></tt>
+      </span>
+    </div>   
+ 
+    <div class="boxline">
       <%= f.label :username, "Username:", :class => "required" %>
       <%= f.text_field :username, :size => 15 %>
       <span class="hint">
