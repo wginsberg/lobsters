@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180201184612) do
+ActiveRecord::Schema.define(version: 20180327212646) do
 
   create_table "comments", id: :integer, unsigned: true, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4" do |t|
     t.datetime "created_at", null: false
@@ -227,6 +227,7 @@ ActiveRecord::Schema.define(version: 20180201184612) do
     t.integer "disabled_invite_by_user_id"
     t.string "disabled_invite_reason", limit: 200
     t.text "settings"
+    t.string "payout_address"
     t.index ["mailing_list_mode"], name: "mailing_list_enabled"
     t.index ["mailing_list_token"], name: "mailing_list_token", unique: true
     t.index ["password_reset_token"], name: "password_reset_token", unique: true
@@ -248,7 +249,7 @@ ActiveRecord::Schema.define(version: 20180201184612) do
 
 
   create_view "replying_comments",  sql_definition: <<-SQL
-      select `read_ribbons`.`user_id` AS `user_id`,`comments`.`id` AS `comment_id`,`read_ribbons`.`story_id` AS `story_id`,`comments`.`parent_comment_id` AS `parent_comment_id`,`comments`.`created_at` AS `comment_created_at`,`parent_comments`.`user_id` AS `parent_comment_author_id`,`comments`.`user_id` AS `comment_author_id`,`stories`.`user_id` AS `story_author_id`,(`read_ribbons`.`updated_at` < `comments`.`created_at`) AS `is_unread`,(select `votes`.`vote` from `votes` where ((`votes`.`user_id` = `read_ribbons`.`user_id`) and (`votes`.`comment_id` = `comments`.`id`))) AS `current_vote_vote`,(select `votes`.`reason` from `votes` where ((`votes`.`user_id` = `read_ribbons`.`user_id`) and (`votes`.`comment_id` = `comments`.`id`))) AS `current_vote_reason` from (((`read_ribbons` join `comments` on((`comments`.`story_id` = `read_ribbons`.`story_id`))) join `stories` on((`stories`.`id` = `comments`.`story_id`))) left join `comments` `parent_comments` on((`parent_comments`.`id` = `comments`.`parent_comment_id`))) where ((`read_ribbons`.`is_following` = 1) and (`comments`.`user_id` <> `read_ribbons`.`user_id`) and (`comments`.`is_deleted` = 0) and (`comments`.`is_moderated` = 0) and ((`parent_comments`.`user_id` = `read_ribbons`.`user_id`) or (isnull(`parent_comments`.`user_id`) and (`stories`.`user_id` = `read_ribbons`.`user_id`))) and ((`comments`.`upvotes` - `comments`.`downvotes`) >= 0) and (isnull(`parent_comments`.`id`) or ((`parent_comments`.`upvotes` - `parent_comments`.`downvotes`) >= 0)))
+      select `lobsters_development`.`read_ribbons`.`user_id` AS `user_id`,`lobsters_development`.`comments`.`id` AS `comment_id`,`lobsters_development`.`read_ribbons`.`story_id` AS `story_id`,`lobsters_development`.`comments`.`parent_comment_id` AS `parent_comment_id`,`lobsters_development`.`comments`.`created_at` AS `comment_created_at`,`parent_comments`.`user_id` AS `parent_comment_author_id`,`lobsters_development`.`comments`.`user_id` AS `comment_author_id`,`lobsters_development`.`stories`.`user_id` AS `story_author_id`,`lobsters_development`.`read_ribbons`.`updated_at` < `lobsters_development`.`comments`.`created_at` AS `is_unread`,(select `lobsters_development`.`votes`.`vote` from `lobsters_development`.`votes` where `lobsters_development`.`votes`.`user_id` = `lobsters_development`.`read_ribbons`.`user_id` and `lobsters_development`.`votes`.`comment_id` = `lobsters_development`.`comments`.`id`) AS `current_vote_vote`,(select `lobsters_development`.`votes`.`reason` from `lobsters_development`.`votes` where `lobsters_development`.`votes`.`user_id` = `lobsters_development`.`read_ribbons`.`user_id` and `lobsters_development`.`votes`.`comment_id` = `lobsters_development`.`comments`.`id`) AS `current_vote_reason` from (((`lobsters_development`.`read_ribbons` join `lobsters_development`.`comments` on(`lobsters_development`.`comments`.`story_id` = `lobsters_development`.`read_ribbons`.`story_id`)) join `lobsters_development`.`stories` on(`lobsters_development`.`stories`.`id` = `lobsters_development`.`comments`.`story_id`)) left join `lobsters_development`.`comments` `parent_comments` on(`parent_comments`.`id` = `lobsters_development`.`comments`.`parent_comment_id`)) where `lobsters_development`.`read_ribbons`.`is_following` = 1 and `lobsters_development`.`comments`.`user_id` <> `lobsters_development`.`read_ribbons`.`user_id` and `lobsters_development`.`comments`.`is_deleted` = 0 and `lobsters_development`.`comments`.`is_moderated` = 0 and (`parent_comments`.`user_id` = `lobsters_development`.`read_ribbons`.`user_id` or `parent_comments`.`user_id` is null and `lobsters_development`.`stories`.`user_id` = `lobsters_development`.`read_ribbons`.`user_id`) and `lobsters_development`.`comments`.`upvotes` - `lobsters_development`.`comments`.`downvotes` >= 0 and (`parent_comments`.`id` is null or `parent_comments`.`upvotes` - `parent_comments`.`downvotes` >= 0)
   SQL
 
 end
